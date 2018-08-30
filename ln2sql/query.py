@@ -1,4 +1,5 @@
 from .constants import Color
+import os
 
 
 class Select():
@@ -456,7 +457,7 @@ class Query():
             self.order_by) + ';\n'
 
     def print_json(self, filename="output.json"):
-        output = open(filename, 'a')
+        output = open(os.path.abspath(filename), 'a')
         output.write('{\n')
         self.select.print_json(output)
         self._from.print_json(output)
