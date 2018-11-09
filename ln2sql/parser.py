@@ -7,6 +7,7 @@ from threading import Thread
 
 from .parsingException import ParsingException
 from .query import *
+from pattern.text import singularize, pluralize
 
 
 class SelectParser(Thread):
@@ -707,8 +708,8 @@ class Parser:
 
         for i in range(0, len(input_word_list)):
             for table_name in self.database_dico:
-                if (input_word_list[i] == table_name) or (
-                            input_word_list[i] in self.database_object.get_table_by_name(table_name).equivalences):
+                if (input_word_list[i] == table_name) or (input_word_list[i] in self.database_object.get_table_by_name(table_name).equivalences)\
+                        or (singularize(input_word_list[i]) == table_name) or (pluralize(input_word_list[i]) == table_name):
                     if number_of_table_temp == 0:
                         start_phrase = input_word_list[:i]
                     number_of_table_temp += 1
@@ -802,7 +803,8 @@ class Parser:
         for i in range(0, len(words)):
             for table_name in self.database_dico:
                 if (words[i] == table_name) or (
-                            words[i] in self.database_object.get_table_by_name(table_name).equivalences):
+                            words[i] in self.database_object.get_table_by_name(table_name).equivalences)\
+                        or (singularize(words[i]) == table_name) or (pluralize(words[i]) == table_name):
                     if number_of_table == 0:
                         select_phrase = words[:i]
                     tables_of_from.append(table_name)
@@ -833,11 +835,14 @@ class Parser:
         if len(tables_of_from) > 0:
             from_phrases = []
             previous_index = 0
+
+
             for i in range(0, len(from_phrase)):
                 for table in tables_of_from:
                     if (from_phrase[i] == table) or (
-                                from_phrase[i] in self.database_object.get_table_by_name(table).equivalences):
-                        from_phrases.append(from_phrase[previous_index:i + 1])
+                                from_phrase[i] in self.database_object.get_table_by_name(table).equivalences)\
+                            or (singularize(from_phrase[i]) == table) or (pluralize(from_phrase[i]) == table):
+                        from_phrases.append(table)
                         previous_index = i + 1
 
             last_junction_word_index = -1
@@ -856,7 +861,7 @@ class Parser:
                     last_junction_word_index = i
 
             if last_junction_word_index == -1:
-                from_phrase = sum(from_phrases[:1], [])
+                from_phrase = sum([from_phrases[:1]], [])
                 where_phrase = sum(from_phrases[1:], []) + where_phrase
             else:
                 from_phrase = sum(from_phrases[:last_junction_word_index + 1], [])
